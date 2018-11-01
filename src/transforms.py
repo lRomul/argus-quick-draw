@@ -87,6 +87,18 @@ class HorizontalFlip(Flip):
         super().__init__(1)
 
 
+class Scale:
+    def __init__(self, size, interpolation=cv2.INTER_AREA):
+        self.size = size
+        self.interpolation = interpolation
+
+    def __call__(self, img):
+        img = cv2.resize(img,
+                         dsize=(self.size, self.size),
+                         interpolation=self.interpolation)
+        return img
+
+
 class ImageToTensor:
     def __call__(self, image):
         image = image.astype(np.float32) / 255.0
@@ -110,16 +122,18 @@ class DrawTransform:
 
 
 class ImageTransform:
-    def __init__(self, train):
+    def __init__(self, train, scale_size=64):
         self.train = train
 
         if train:
             self.transform = Compose([
-                # UseWithProb(HorizontalFlip(), 0.2),
+                UseWithProb(HorizontalFlip(), 0.4),
+                Scale(scale_size),
                 ImageToTensor()
             ])
         else:
             self.transform = Compose([
+                Scale(scale_size),
                 ImageToTensor()
             ])
 
