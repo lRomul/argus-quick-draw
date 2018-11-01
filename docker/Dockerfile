@@ -1,10 +1,10 @@
-FROM floydhub/pytorch:0.4.1-gpu.cuda9cudnn7-py3.34
+FROM floydhub/pytorch:1.0.0-gpu.cuda9cudnn7-py3.37
 
 RUN pip3 install --upgrade pip &&\
     pip3 install \
     torchsummary\
     pretrainedmodels\
-    pytorch-argus==0.0.5\
+    pytorch-argus==0.0.6\
     cnn-finetune==0.5.1\
     tqdm
 

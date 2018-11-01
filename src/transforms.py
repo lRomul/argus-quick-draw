@@ -68,7 +68,8 @@ class RandomCrop:
         self.size = size
 
     def __call__(self, img):
-        img = random_crop(img, self.size)
+        size = np.random.randint(self.size[0], self.size[1])
+        img = random_crop(img, (size, size))
         return img
 
 
@@ -99,6 +100,40 @@ class Scale:
         return img
 
 
+class RandomBorderScale:
+    def __init__(self, max_scale=0.7):
+        self.max_scale = max_scale
+
+    def __call__(self, img):
+        scale = random.uniform(self.max_scale, 1.0)
+        size = img.shape[:2][::-1]
+        scale_img_size = (np.array(size) * scale).astype(int)
+        scale_img_size = tuple(scale_img_size.tolist())
+        scale_img = cv2.resize(img, scale_img_size)
+        border_image = np.zeros_like(img)
+
+        x_shift, y_shift = (np.array(size) - scale_img_size) // 2
+        border_image[y_shift:y_shift + scale_img.shape[0],
+                     x_shift:x_shift + scale_img.shape[1]] = scale_img
+
+        return border_image
+
+
+class Rotate:
+    def __init__(self, limit=15):
+        self.limit = limit
+
+    def __call__(self, img):
+        angle = random.uniform(-self.limit, self.limit)
+
+        height, width = img.shape[0:2]
+        mat = cv2.getRotationMatrix2D((width / 2, height / 2), angle, 1.0)
+        rotate_img = cv2.warpAffine(img, mat, (height, width),
+                                    flags=cv2.INTER_LINEAR,
+                                    borderMode=cv2.BORDER_CONSTANT)
+        return rotate_img
+
+
 class ImageToTensor:
     def __call__(self, image):
         image = image.astype(np.float32) / 255.0
@@ -122,12 +157,16 @@ class DrawTransform:
 
 
 class ImageTransform:
-    def __init__(self, train, scale_size=64):
+    def __init__(self, train, scale_size=64, random_crop_size=(112, 128),
+                 rotate_angle=15, max_border_scale=0.7):
         self.train = train
 
         if train:
             self.transform = Compose([
                 UseWithProb(HorizontalFlip(), 0.4),
+                UseWithProb(RandomCrop(random_crop_size), 0.2),
+                UseWithProb(RandomBorderScale(max_border_scale), 0.2),
+                UseWithProb(Rotate(rotate_angle), 0.5),
                 Scale(scale_size),
                 ImageToTensor()
             ])
