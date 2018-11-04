@@ -163,10 +163,10 @@ class ImageTransform:
 
         if train:
             self.transform = Compose([
-                UseWithProb(HorizontalFlip(), 0.4),
-                UseWithProb(RandomCrop(random_crop_size), 0.2),
-                UseWithProb(RandomBorderScale(max_border_scale), 0.2),
-                UseWithProb(Rotate(rotate_angle), 0.5),
+                UseWithProb(HorizontalFlip(), 0.3),
+                # UseWithProb(RandomCrop(random_crop_size), 0.2),
+                # UseWithProb(RandomBorderScale(max_border_scale), 0.2),
+                # UseWithProb(Rotate(rotate_angle), 0.5),
                 Scale(scale_size),
                 ImageToTensor()
             ])
