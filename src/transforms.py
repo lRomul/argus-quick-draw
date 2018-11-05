@@ -136,8 +136,8 @@ class Rotate:
 
 class ImageToTensor:
     def __call__(self, image):
+        image = np.moveaxis(image, -1, 0)
         image = image.astype(np.float32) / 255.0
-        image = np.stack([image]*3, axis=0)
         return torch.from_numpy(image)
 
 

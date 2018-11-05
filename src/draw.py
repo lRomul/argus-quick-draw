@@ -1,8 +1,11 @@
 import cv2
 import numpy as np
-from typing import List
+import matplotlib.pyplot as plt
 
 from src import config
+
+
+COLOR_MAP = plt.get_cmap('rainbow')
 
 
 def scale_drawing(drawing, size=112):
@@ -24,11 +27,15 @@ def scale_drawing(drawing, size=112):
     return scaled_drawing
 
 
-def draw_cv2(drawing, size=128, lw=3, shift=8, time_color=True):
-    img = np.zeros((size, size), np.uint8)
+def draw_cv2(drawing, size=128, lw=2, shift=4, time_color=True):
+    img = np.zeros((size, size, 3), np.uint8)
     for t, stroke in enumerate(drawing):
         for i in range(len(stroke[0]) - 1):
-            color = 255 - min(t, 10) * 13 if time_color else 255
-            _ = cv2.line(img, (stroke[0][i] + shift, stroke[1][i] + shift),
-                         (stroke[0][i + 1] + shift, stroke[1][i + 1] + shift), color, lw)
+            if time_color:
+                color = t / max(1, len(drawing) - 1)
+                color = tuple([int(c * 255) for c in COLOR_MAP(color)[:3]])
+            else:
+                color = (255, 255, 255)
+            cv2.line(img, (stroke[0][i] + shift, stroke[1][i] + shift),
+                     (stroke[0][i + 1] + shift, stroke[1][i + 1] + shift), color, lw)
     return img
