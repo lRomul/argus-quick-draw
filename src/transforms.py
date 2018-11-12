@@ -90,13 +90,14 @@ class HorizontalFlip(Flip):
 
 class Scale:
     def __init__(self, size, interpolation=cv2.INTER_AREA):
-        self.size = size
+        self.size = (size, size)
         self.interpolation = interpolation
 
     def __call__(self, img):
-        img = cv2.resize(img,
-                         dsize=(self.size, self.size),
-                         interpolation=self.interpolation)
+        if img.shape[:2] != self.size:
+            img = cv2.resize(img,
+                             dsize=self.size,
+                             interpolation=self.interpolation)
         return img
 
 
@@ -157,13 +158,12 @@ class DrawTransform:
 
 
 class ImageTransform:
-    def __init__(self, train, scale_size=64, random_crop_size=(112, 128),
-                 rotate_angle=15, max_border_scale=0.7):
+    def __init__(self, train, scale_size):
         self.train = train
 
         if train:
             self.transform = Compose([
-                UseWithProb(HorizontalFlip(), 0.3),
+                # UseWithProb(HorizontalFlip(), 0.3),
                 # UseWithProb(RandomCrop(random_crop_size), 0.2),
                 # UseWithProb(RandomBorderScale(max_border_scale), 0.2),
                 # UseWithProb(Rotate(rotate_angle), 0.5),
