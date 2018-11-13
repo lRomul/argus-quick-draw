@@ -2,6 +2,7 @@ from argus import Model
 from cnn_finetune import make_model
 
 from src.nn_modules import CountryEmbModel
+from src.metrics import MAPatK
 
 
 class CnnFinetune(Model):
