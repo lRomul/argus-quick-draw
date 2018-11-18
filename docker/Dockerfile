@@ -4,7 +4,7 @@ RUN pip3 install --upgrade pip &&\
     pip3 install \
     torchsummary\
     pretrainedmodels\
-    pytorch-argus==0.0.6\
+    pytorch-argus==0.0.7\
     cnn-finetune==0.5.1\
     tqdm
 

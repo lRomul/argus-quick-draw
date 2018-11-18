@@ -1,7 +1,7 @@
 from argus import Model
 from cnn_finetune import make_model
 
-from src.nn_modules import CountryEmbModel
+from src.nn_modules import CountryEmbModel, CountryRecEmbModel
 from src.metrics import MAPatK
 
 
@@ -12,5 +12,6 @@ class CnnFinetune(Model):
 class DrawMetaModel(Model):
     nn_module = {
         'cnn_finetune': make_model,
-        'CountryEmbModel': CountryEmbModel
+        'CountryEmbModel': CountryEmbModel,
+        'CountryRecEmbModel': CountryRecEmbModel
     }
