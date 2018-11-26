@@ -18,8 +18,11 @@ DRAW_LINE_WIDTH = 2
 TIME_COLOR = True
 SCALE_SIZE = 128
 PRED_BATCH_SIZE = 1024
-MODEL_PATH = '/workdir/data/experiments/rainbow_country_se_resnext50_001/model-109-0.885694.pth'
-PREDICT_DIR = '/workdir/data/predictions/rainbow_country_se_resnext50_001'
+EXPERIMENT = 'rainbow_country_se_resnext50_001'
+MODEL = 'model-092-0.885456'
+
+MODEL_PATH = f'/workdir/data/experiments/{EXPERIMENT}/{MODEL}.pth'
+PREDICT_DIR = f'/workdir/data/predictions/{EXPERIMENT}/{MODEL}'
 
 
 class Predictor:
@@ -54,6 +57,9 @@ class Predictor:
 
 
 if __name__ == "__main__":
+    print("Model", MODEL_PATH)
+    print("Prediction folder", PREDICT_DIR)
+
     make_dir(PREDICT_DIR)
     draw_transform = DrawTransform(DRAW_SIZE, DRAW_PAD, DRAW_LINE_WIDTH, TIME_COLOR)
     image_trns = ImageTransform(False, SCALE_SIZE)
@@ -67,7 +73,7 @@ if __name__ == "__main__":
     pred_words = []
     pred_key_ids = []
     probs_lst = []
-    for i, row in tqdm.tqdm(test_df.iterrows()):
+    for i, row in tqdm.tqdm(test_df.iterrows(), total=test_df.shape[0]):
         drawing = eval(row.drawing)
 
         drawings.append((drawing, str(row.countrycode)))
@@ -87,6 +93,8 @@ if __name__ == "__main__":
             key_ids = []
 
     probs = predictor(drawings).cpu().numpy()
+    probs_lst.append(probs)
+
     preds_idx = probs.argsort(axis=1)
     preds_idx = np.fliplr(preds_idx)[:, :3]
     for pred_idx, key_id in zip(preds_idx, key_ids):
@@ -97,7 +105,7 @@ if __name__ == "__main__":
     drawings = []
     key_ids = []
 
-    probs_array = np.stack(probs_lst, axis=0)
+    probs_array = np.concatenate(probs_lst, axis=0).astype(np.float32)
     np.save(join(PREDICT_DIR, 'probs.npy'), probs_array)
 
     submission = pd.DataFrame({'key_id': pred_key_ids, 'word': pred_words})
