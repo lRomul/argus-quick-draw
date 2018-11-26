@@ -10,6 +10,7 @@ from argus import load_model
 from argus.callbacks import MonitorCheckpoint, EarlyStopping
 from argus.callbacks import LoggingToFile, ReduceLROnPlateau
 
+from src.utils import make_dir
 from src.datasets import DrawDataset, get_train_val_samples
 from src.transforms import ImageTransform, DrawTransform
 from src.argus_models import CnnFinetune, DrawMetaModel
@@ -17,17 +18,20 @@ from src.metrics import MAPatK
 from src import config
 
 
-image_size = 256
-scale_size = 256
-image_pad = 6
-image_line_width = 3
-time_color = True
-train_batch_size = 48
-val_batch_size = 48
-train_epoch_size = 1000000
-val_key_id_path = '/workdir/data/val_key_ids_001.json'
-pretrain_path = '/workdir/data/experiments/rainbow_country_se_resnext50_001_after_001/model-063-0.887085.pth'
-experiment_name = 'rb_ctry_se_resnext50_test'
+DRAW_SIZE = 256
+SCALE_SIZE = 256
+DRAW_PAD = 6
+DRAW_LINE_WIDTH = 3
+TIME_COLOR = True
+TRAIN_BATCH_SIZE = 102
+VAL_BATCH_SIZE = 102
+TRAIN_EPOCH_SIZE = 1000000
+LR = 2e-5
+N_WORKERS = 8
+EXP_DIR = '/workdir/data/experiments/'
+VAL_KEY_ID_PATH = '/workdir/data/val_key_ids_001.json'
+PRETRAIN_PATH = f'{EXP_DIR}/rb_ctry_se_resnext50_002/model-013-0.887236.pth'
+EXP_NAME = 'rb_ctry_se_resnext50_002a'
 
 
 params = {
@@ -42,38 +46,51 @@ params = {
         'num_country': len(config.COUNTRIES),
         'country_emb_dim': 10
     }),
-    'optimizer': ('Adam', {'lr': 0.001}),
+    'optimizer': ('Adam', {'lr': LR}),
     'loss': 'CrossEntropyLoss',
-    'device': 'cuda'
+    'device': ['cuda:0', 'cuda:1']
 }
 
-train_samples, val_samples = get_train_val_samples(val_key_id_path)
 
-draw_transform = DrawTransform(image_size, image_pad, image_line_width, time_color)
-train_trns = ImageTransform(True, scale_size)
-train_dataset = DrawDataset(train_samples, draw_transform,
-                            size=train_epoch_size, image_transform=train_trns)
-val_trns = ImageTransform(False, scale_size)
-val_dataset = DrawDataset(val_samples, draw_transform, image_transform=val_trns)
+if __name__ == "__main__":
+    save_dir = os.path.join(EXP_DIR, EXP_NAME)
+    make_dir(save_dir)
+    with open(os.path.join(save_dir, 'source.py'), 'w') as outfile:
+        outfile.write(open(__file__).read())
+    train_samples, val_samples = get_train_val_samples(VAL_KEY_ID_PATH)
+    draw_transform = DrawTransform(DRAW_SIZE, DRAW_PAD, DRAW_LINE_WIDTH,
+                                   TIME_COLOR)
+    train_trns = ImageTransform(True, SCALE_SIZE)
+    train_dataset = DrawDataset(train_samples, draw_transform,
+                                size=TRAIN_EPOCH_SIZE,
+                                image_transform=train_trns)
+    val_trns = ImageTransform(False, SCALE_SIZE)
+    val_dataset = DrawDataset(val_samples, draw_transform,
+                              image_transform=val_trns)
 
-train_loader = DataLoader(train_dataset, batch_size=train_batch_size, num_workers=8, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=val_batch_size, num_workers=8, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE,
+                              num_workers=N_WORKERS, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=VAL_BATCH_SIZE,
+                            num_workers=N_WORKERS, shuffle=False)
 
-model = DrawMetaModel(params)
+    model = DrawMetaModel(params)
 
-if pretrain_path is not None:
-    model = load_model(pretrain_path)
+    if PRETRAIN_PATH is not None:
+        model = load_model(PRETRAIN_PATH)
+        model.set_lr(LR)
+        model._build_device(params)
 
-callbacks = [
-    MonitorCheckpoint(f'/workdir/data/experiments/{experiment_name}', monitor='val_map_at_k', max_saves=3),
-    EarlyStopping(monitor='val_map_at_k', patience=45),
-    ReduceLROnPlateau(monitor='val_map_at_k', factor=0.75, patience=1, min_lr=0.000001),
-    LoggingToFile(f'/workdir/data/experiments/{experiment_name}/log.txt')
-]
-
-model.fit(train_loader,
-          val_loader=val_loader,
-          max_epochs=1000,
-          callbacks=callbacks,
-          metrics=['accuracy', MAPatK(k=3)])
+    callbacks = [
+        MonitorCheckpoint(save_dir, monitor='val_map_at_k', max_saves=3),
+        EarlyStopping(monitor='val_map_at_k', patience=45),
+        ReduceLROnPlateau(monitor='val_map_at_k', factor=0.75, patience=1,
+                          min_lr=0.000001),
+        LoggingToFile(f'{save_dir}/log.txt')
+    ]
+    
+    model.fit(train_loader,
+              val_loader=val_loader,
+              max_epochs=1000,
+              callbacks=callbacks,
+              metrics=['accuracy', MAPatK(k=3)])
 
