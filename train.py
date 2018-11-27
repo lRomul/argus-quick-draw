@@ -24,8 +24,8 @@ DRAW_PAD = 4
 DRAW_LINE_WIDTH = 2
 TIME_COLOR = True
 ITER_SIZE = 3
-TRAIN_BATCH_SIZE = 400 * ITER_SIZE
-VAL_BATCH_SIZE = 400 * ITER_SIZE
+TRAIN_BATCH_SIZE = 448 * ITER_SIZE
+VAL_BATCH_SIZE = 448 * ITER_SIZE
 TRAIN_EPOCH_SIZE = 1000000
 LR = 2e-5
 N_WORKERS = 8
@@ -70,9 +70,9 @@ if __name__ == "__main__":
                               image_transform=val_trns)
 
     train_loader = DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE,
-                              num_workers=N_WORKERS, shuffle=True)
+                              num_workers=N_WORKERS, shuffle=True, pin_memory=True)
     val_loader = DataLoader(val_dataset, batch_size=VAL_BATCH_SIZE,
-                            num_workers=N_WORKERS, shuffle=False)
+                            num_workers=N_WORKERS, shuffle=False, pin_memory=True)
 
     model = IterSizeMetaModel(params)
 
@@ -83,6 +83,7 @@ if __name__ == "__main__":
         model.set_lr(LR)
         params['device'] = ['cuda:0', 'cuda:1']
         model._build_device(params)
+        del pretrain_model
 
     callbacks = [
         MonitorCheckpoint(save_dir, monitor='val_map_at_k', max_saves=3),
