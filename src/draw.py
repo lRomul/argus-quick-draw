@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from src import config
 
 
-COLOR_MAP = plt.get_cmap('brg')
+COLOR_MAP = plt.get_cmap('rainbow')
 
 
 def scale_drawing(drawing, size=112):
