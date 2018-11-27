@@ -1,4 +1,3 @@
-import gc
 import torch
 import collections
 from argus import Model
@@ -47,8 +46,6 @@ class IterSizeMetaModel(Model):
 
         prediction = detach_tensors(prediction)
         target = detach_tensors(target)
-        del imgs, countries, targets
-        gc.collect()
 
         return {
             'prediction': self.prediction_transform(prediction),
