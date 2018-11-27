@@ -3,10 +3,37 @@ import tqdm
 import time
 import random
 import pandas as pd
+import multiprocessing as mp
+
 import torch
 from torch.utils.data import Dataset
 
 from src import config
+
+N_WORKERS = mp.cpu_count()
+
+
+def process_cls(p):
+    cls, val_key_id_set = p
+    class_df = pd.read_csv(config.CLASS_TO_CSV_PATH[cls])
+    #class_df = class_df[class_df.recognized]
+    val_key_ids = class_df.key_id.isin(val_key_id_set)
+
+    train_class_df = class_df[~val_key_ids]
+    train_drawings = train_class_df.drawing.values
+    train_words = train_class_df.word.values
+    train_countries = train_class_df.countrycode.values
+    
+    val_class_df = class_df[val_key_ids]
+    val_drawings = val_class_df.drawing.values
+    val_words = val_class_df.word.values
+    val_countries = val_class_df.countrycode.values
+    
+    train = (train_drawings.tolist(), train_words.tolist(),
+             train_countries.tolist())
+    val = (val_drawings.tolist(), val_words.tolist(),
+           val_countries.tolist())
+    return (train, val)
 
 
 def get_train_val_samples(val_key_id_path):
@@ -19,27 +46,18 @@ def get_train_val_samples(val_key_id_path):
     val_drawing_lst = []
     val_class_lst = []
     val_country_lst = []
-
-    for cls in tqdm.tqdm(config.CLASSES):
-        class_df = pd.read_csv(config.CLASS_TO_CSV_PATH[cls])
-        #class_df = class_df[class_df.recognized]
-        val_key_ids = class_df.key_id.isin(val_key_id_set)
-
-        train_class_df = class_df[~val_key_ids]
-        train_drawings = train_class_df.drawing.values
-        train_words = train_class_df.word.values
-        train_countries = train_class_df.countrycode.values
-        train_drawing_lst += train_drawings.tolist()
-        train_class_lst += train_words.tolist()
-        train_country_lst += train_countries.tolist()
-
-        val_class_df = class_df[val_key_ids]
-        val_drawings = val_class_df.drawing.values
-        val_words = val_class_df.word.values
-        val_countries = val_class_df.countrycode.values
-        val_drawing_lst += val_drawings.tolist()
-        val_class_lst += val_words.tolist()
-        val_country_lst += val_countries.tolist()
+    
+    pool_data = [(cls, val_key_id_set) for cls in config.CLASSES]
+    with mp.Pool(N_WORKERS) as pool:
+        pool_res = pool.map(process_cls, pool_data)
+    
+    for res in pool_res:
+        train_drawing_lst += res[0][0]
+        train_class_lst += res[0][1]
+        train_country_lst += res[0][2]
+        val_drawing_lst += res[1][0]
+        val_class_lst += res[1][1]
+        val_country_lst += res[1][2]
 
     train_samples = train_drawing_lst, train_class_lst, train_country_lst
     val_samples = val_drawing_lst, val_class_lst, val_country_lst
