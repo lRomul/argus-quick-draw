@@ -58,16 +58,25 @@ def scale_time_drawing(drawing, size=112):
         scaled_drawing.append([x_scaled_lst, y_scaled_lst, t])
     return scaled_drawing
 
+t_col_scale = 0.1
 
 def draw_time_cv2(drawing, size=128, lw=2, shift=4):
     img = np.zeros((size, size, 3), np.uint8)
+    n_str = max(1, len(drawing))
     for t, stroke in enumerate(drawing):
-        color_stroke = t / max(1, len(drawing) - 1)
-        color_stroke_inv = 1 - color_stroke
-        color_time = stroke[2][0]
-        color = (color_stroke, color_stroke_inv, color_time)
-        color = tuple([int(c * 255) for c in color])
-        for i in range(len(stroke[0]) - 1):
+        n_pt = len(stroke[0]) - 1
+        color_stroke_s = t / n_str
+        color_stroke_f = (t + 0.5) / n_str
+        color_time_s = t_col_scale + (stroke[2][0] * (1 - t_col_scale))
+        color_time_f = t_col_scale + (stroke[2][1] * (1 - t_col_scale))
+        d_col = (color_stroke_f - color_stroke_s) / n_pt
+        d_t = (color_time_f - color_time_s) / n_pt
+        for i in range(n_pt):
+            color_stroke = color_stroke_s + i * d_col
+            color_stroke_inv = 1 - color_stroke
+            color_time = color_time_s + i * d_t
+            color = (color_stroke, color_stroke_inv, color_time)
+            color = tuple([int(c * 255) for c in color])
             cv2.line(img, (stroke[0][i] + shift, stroke[1][i] + shift),
                      (stroke[0][i + 1] + shift, stroke[1][i + 1] + shift), color, lw)
     return img
