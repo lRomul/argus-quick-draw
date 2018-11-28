@@ -18,21 +18,21 @@ from src.metrics import MAPatK
 from src import config
 
 
-DRAW_SIZE = 128
+DRAW_SIZE = 256
 SCALE_SIZE = 128
-DRAW_PAD = 4
-DRAW_LINE_WIDTH = 2
+DRAW_PAD = 3
+DRAW_LINE_WIDTH = 3
 TIME_COLOR = True
-ITER_SIZE = 3
+ITER_SIZE = 2
 TRAIN_BATCH_SIZE = 448 * ITER_SIZE
 VAL_BATCH_SIZE = 448 * ITER_SIZE
 TRAIN_EPOCH_SIZE = 1000000
-LR = 2e-5
+LR = 1e-3
 N_WORKERS = 8
 EXP_DIR = '/workdir/data/experiments/'
 VAL_KEY_ID_PATH = '/workdir/data/val_key_ids_001.json'
-PRETRAIN_PATH = f'{EXP_DIR}/rainbow_country_se_resnext50_001/model-109-0.885694.pth'
-EXP_NAME = 'iter_rb_ctry_se_resnext50_004'
+PRETRAIN_PATH = None#f'{EXP_DIR}/rainbow_country_se_resnext50_001/model-109-0.885694.pth'
+EXP_NAME = 'iter_rb_ctry_time_se_resnext50_006'
 
 
 params = {
@@ -40,7 +40,7 @@ params = {
         'cnn_finetune': {
             'model_name': 'se_resnext50_32x4d',
             'num_classes': len(config.CLASSES),
-            'pretrained': True,
+            'pretrained': False,
             'dropout_p': 0.2,
         },
         'num_country': len(config.COUNTRIES),
@@ -89,7 +89,7 @@ if __name__ == "__main__":
         MonitorCheckpoint(save_dir, monitor='val_map_at_k', max_saves=3),
         EarlyStopping(monitor='val_map_at_k', patience=45),
         ReduceLROnPlateau(monitor='val_map_at_k', factor=0.75, patience=1,
-                          min_lr=1e-7),
+                          min_lr=5e-7),
         LoggingToFile(f'{save_dir}/log.txt')
     ]
 

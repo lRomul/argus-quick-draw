@@ -5,7 +5,7 @@ import numpy as np
 import cv2
 cv2.setNumThreads(0)
 
-from src.draw import scale_drawing, draw_cv2
+from src.draw import scale_drawing, draw_cv2, scale_time_drawing, draw_time_cv2
 
 
 def img_size(image: np.ndarray):
@@ -151,9 +151,9 @@ class DrawTransform:
         self.scale_size = self.size - 2*self.pad
 
     def __call__(self, drawing):
-        scaled_drawing = scale_drawing(drawing, self.scale_size)
-        image = draw_cv2(scaled_drawing, size=self.size, lw=self.line_width,
-                         shift=self.pad, time_color=self.time_color)
+        scaled_drawing = scale_time_drawing(drawing, self.scale_size)
+        image = draw_time_cv2(scaled_drawing, size=self.size, lw=self.line_width,
+                              shift=self.pad)
         return image
 
 

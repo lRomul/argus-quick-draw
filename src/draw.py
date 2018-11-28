@@ -59,7 +59,7 @@ def scale_time_drawing(drawing, size=112):
     return scaled_drawing
 
 
-def draw_time_cv2(drawing, size=128, lw=2, shift=4, time_color=True):
+def draw_time_cv2(drawing, size=128, lw=2, shift=4):
     img = np.zeros((size, size, 3), np.uint8)
     for t, stroke in enumerate(drawing):
         color_stroke = t / max(1, len(drawing) - 1)
