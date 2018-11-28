@@ -32,11 +32,11 @@ class CountryEmbModel(nn.Module):
     def __init__(self, cnn_finetune, num_country, country_emb_dim=10):
         super().__init__()
         num_classes = cnn_finetune['num_classes']
-
-        if cnn_finetune['model_name'] == 'pnasnet5large':
-            self.features = PNAS(make_model(**cnn_finetune))
+        model_name = cnn_finetune['model_name']
+        cnn_finetune = make_model(**cnn_finetune)
+        if model_name == 'pnasnet5large':
+            self.features = PNAS(cnn_finetune)
         else:
-            cnn_finetune = make_model(**cnn_finetune)
             self.features = cnn_finetune._features
 
         self.pool = cnn_finetune.pool
