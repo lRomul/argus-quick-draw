@@ -7,19 +7,19 @@ from os.path import join
 from argus import load_model
 
 from src.transforms import ImageTransform, DrawTransform
-from src.argus_models import DrawMetaModel
+from src.argus_models import DrawMetaModel, IterSizeMetaModel
 from src.utils import make_dir
 from src import config
 
 
-DRAW_SIZE = 128
-DRAW_PAD = 4
-DRAW_LINE_WIDTH = 2
+DRAW_SIZE = 256
+DRAW_PAD = 3
+DRAW_LINE_WIDTH = 3
 TIME_COLOR = True
 SCALE_SIZE = 128
-PRED_BATCH_SIZE = 1024
-EXPERIMENT = 'rainbow_country_se_resnext50_001'
-MODEL = 'model-092-0.885456'
+PRED_BATCH_SIZE = 512
+EXPERIMENT = 'iter_size_se_resnext50_001'
+MODEL = 'model-074-0.889637'
 
 MODEL_PATH = f'/workdir/data/experiments/{EXPERIMENT}/{MODEL}.pth'
 PREDICT_DIR = f'/workdir/data/predictions/{EXPERIMENT}/{MODEL}'
