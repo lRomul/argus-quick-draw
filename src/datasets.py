@@ -9,9 +9,14 @@ from torch.utils.data import Dataset
 from src import config
 
 
-def get_train_val_samples(val_key_id_path):
+def get_train_val_samples(val_key_id_path, blacklist_path=None):
     with open(val_key_id_path) as file:
         val_key_id_set = set(json.loads(file.read()))
+
+    blacklist = set()
+    if blacklist_path is not None:
+        with open(blacklist_path) as file:
+            blacklist = set(json.loads(file.read()))
 
     train_drawing_lst = []
     train_class_lst = []
@@ -22,6 +27,7 @@ def get_train_val_samples(val_key_id_path):
 
     for cls in tqdm.tqdm(config.CLASSES):
         class_df = pd.read_csv(config.CLASS_TO_CSV_PATH[cls])
+        class_df = class_df[~class_df.key_id.isin(blacklist)]
         val_key_ids = class_df.key_id.isin(val_key_id_set)
 
         train_class_df = class_df[~val_key_ids]
