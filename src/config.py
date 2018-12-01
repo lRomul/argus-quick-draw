@@ -4,7 +4,7 @@ from os.path import join
 DATA_DIR = '/workdir/data/'
 TRAIN_SIMPLIFIED = join(DATA_DIR, 'train_simplified')
 TRAIN_TIME = join(DATA_DIR, 'train_time')
-TEST_SIMPLIFIED_PATH = join(DATA_DIR, 'test_simplified.csv')
+TEST_SIMPLIFIED_PATH = join(DATA_DIR, 'test/test_time/test.csv')
 BASE_SIZE_SIMPLIFIED = 256
 SAMPLE_SUBMISSION = join(DATA_DIR, 'sample_submission.csv')
 

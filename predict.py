@@ -12,14 +12,14 @@ from src.utils import make_dir
 from src import config
 
 
-DRAW_SIZE = 128
-DRAW_PAD = 4
-DRAW_LINE_WIDTH = 2
-TIME_COLOR = True
+DRAW_SIZE = 256
 SCALE_SIZE = 128
+DRAW_PAD = 3
+DRAW_LINE_WIDTH = 3
+TIME_COLOR = True
 PRED_BATCH_SIZE = 1024
-EXPERIMENT = 'rainbow_country_se_resnext50_001'
-MODEL = 'model-092-0.885456'
+EXPERIMENT = 'iter_rb_ctry_time_se_resnext50_006a'
+MODEL = 'model-011-0.890395'
 
 MODEL_PATH = f'/workdir/data/experiments/{EXPERIMENT}/{MODEL}.pth'
 PREDICT_DIR = f'/workdir/data/predictions/{EXPERIMENT}/{MODEL}'

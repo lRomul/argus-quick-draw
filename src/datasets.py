@@ -14,9 +14,10 @@ N_WORKERS = mp.cpu_count()
 
 
 def process_cls(p):
-    cls, val_key_id_set = p
+    cls, val_key_id_set, blacklist = p
     class_df = pd.read_csv(config.CLASS_TO_CSV_PATH[cls])
     #class_df = class_df[class_df.recognized]
+    class_df = class_df[~class_df.key_id.isin(blacklist)]
     val_key_ids = class_df.key_id.isin(val_key_id_set)
 
     train_class_df = class_df[~val_key_ids]
@@ -36,9 +37,16 @@ def process_cls(p):
     return (train, val)
 
 
-def get_train_val_samples(val_key_id_path):
+def get_train_val_samples(val_key_id_path, blacklist_path=None):
     with open(val_key_id_path) as file:
         val_key_id_set = set(json.loads(file.read()))
+        print("Val key list len:", len(val_key_id_set))
+    
+    blacklist = set()
+    if blacklist_path is not None:
+        with open(blacklist_path) as file:
+            blacklist = set(json.loads(file.read()))
+            print("Blacklist len:", len(blacklist))
 
     train_drawing_lst = []
     train_class_lst = []
@@ -47,7 +55,7 @@ def get_train_val_samples(val_key_id_path):
     val_class_lst = []
     val_country_lst = []
     
-    pool_data = [(cls, val_key_id_set) for cls in config.CLASSES]
+    pool_data = [(cls, val_key_id_set, blacklist) for cls in config.CLASSES]
     with mp.Pool(N_WORKERS) as pool:
         pool_res = pool.map(process_cls, pool_data)
     
