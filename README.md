@@ -28,8 +28,8 @@ The provided dockerfile is supplied to build image with cuda support and cudnn.
 * Clone the repo, build docker image. 
     ```bash
     git clone https://github.com/lRomul/argus-quick-draw.git
-    cd argus-quick-draw/docker 
-    ./build.sh
+    cd argus-quick-draw
+    make build
     ```
 
 * Download and extract [dataset](https://www.kaggle.com/c/quickdraw-doodle-recognition/data)
@@ -38,8 +38,7 @@ The provided dockerfile is supplied to build image with cuda support and cudnn.
 
 * Run docker container 
 ```bash
-cd docker
-./run.sh
+make run
 ```
 
 * Train model
