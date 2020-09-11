@@ -1,0 +1,5 @@
+torchsummary
+pretrainedmodels
+pytorch-argus==0.0.6
+cnn-finetune==0.5.1
+tqdm
